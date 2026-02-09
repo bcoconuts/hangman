@@ -76,27 +76,24 @@ def get_guessed_letter(guessed_letter_set: set) -> str:
 
     return guessed_letter
 
-
-def check_life_loss(guessed_letter: str, secret_word_set: set) -> bool:
-    if guessed_letter in secret_word_set:
-        return False
-    else:
-        return True
-
-def perform_game_logic(secret_word_set: set, guessed_letter_set: set) -> tuple[bool, bool]:
-    guessed_letter = get_guessed_letter(guessed_letter_set)
-    guessed_letter_set.add(guessed_letter)
-    game_over = secret_word_set.issubset(guessed_letter_set)
-    life_loss = check_life_loss(guessed_letter, secret_word_set)
-    return game_over, life_loss
+def play_game_loop() -> tuple[int, str]:
+    game_over, lives_remaining, guessed_letter_set, secret_word, secret_word_set = setup_game()
+    while not game_over and lives_remaining > 0:
+        guessed_letter = get_guessed_letter(guessed_letter_set)
+        guessed_letter_set.add(guessed_letter)
+        game_over = secret_word_set.issubset(guessed_letter_set)
+        if guessed_letter not in secret_word_set:
+            lives_remaining -= 1
+        display_results(secret_word, guessed_letter_set, lives_remaining)
+    
+    return lives_remaining, secret_word
 
 
 # ==========================
 # DISPLAY
 # ==========================
 
-
-def display_secret_word(secret_word: str, guessed_letter_set: set) -> None:
+def display_results(secret_word: str, guessed_letter_set: set, lives_remaining: int) -> None:
     displayed_word = ""
     for char in secret_word:
         if char in guessed_letter_set:
@@ -104,10 +101,6 @@ def display_secret_word(secret_word: str, guessed_letter_set: set) -> None:
         else:
             displayed_word += "_"
     print(displayed_word)
-
-
-def display_results(secret_word: str, guessed_letter_set: set, lives_remaining: int) -> None:
-    display_secret_word(secret_word, guessed_letter_set)
     print(f"{lives_remaining} lives remaining.")
 
 
@@ -119,9 +112,9 @@ def display_ending(lives_remaining: int, secret_word: str) -> None:
     if lives_remaining <= 0:
         print(f"\nToo Bad! You lost! My word was {secret_word}. Better luck next time.")
     elif lives_remaining == 1:
-        print(f"\nCongratulations! You managed to win with {lives_remaining} life remaining!")
+        print(f"\nClose Call! You managed to win with only {lives_remaining} life remaining!")
     else:
-        print(f"\nCongratulations! You managed to win with {lives_remaining} lives remaining!")
+        print(f"\nCongratulations! You won with {lives_remaining} lives remaining!")
 
 
 # ==========================
@@ -131,12 +124,7 @@ def display_ending(lives_remaining: int, secret_word: str) -> None:
 
 def main():
     display_greeting()
-    game_over, lives_remaining, guessed_letter_set, secret_word, secret_word_set = setup_game()
-    while not game_over and lives_remaining > 0:
-        game_over, life_loss = perform_game_logic(secret_word_set, guessed_letter_set)
-        if life_loss:
-            lives_remaining -= 1
-        display_results(secret_word, guessed_letter_set, lives_remaining)
+    lives_remaining, secret_word = play_game_loop()
     display_ending(lives_remaining, secret_word)
 
 
